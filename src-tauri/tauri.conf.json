@@ -33,7 +33,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.whwan.freedom-edit",
       "targets": "all"
     },
     "security": {
@@ -47,8 +47,10 @@
         "fullscreen": false,
         "resizable": true,
         "title": "freedomEdit",
-        "width": 880,
-        "height": 600
+        "width": 1080,
+        "height": 620,
+        "minWidth": 680,
+        "minHeight": 420
       }
     ]
   }

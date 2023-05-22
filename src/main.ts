@@ -4,8 +4,10 @@ import ArcoVue from "@arco-design/web-vue";
 import App from "./App.vue";
 import ArcoVueIcon from "@arco-design/web-vue/es/icon";
 import "@arco-design/web-vue/dist/arco.css";
+import appConfig, { appConfigKey } from "./hook/appConfig";
 
 const app = createApp(App);
 app.use(ArcoVue);
 app.use(ArcoVueIcon);
+app.provide(appConfigKey, appConfig);
 app.mount("#app");

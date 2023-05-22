@@ -1,86 +1,181 @@
 <script setup lang="ts">
-import { invoke } from "@tauri-apps/api";
-import { FileEntry, readDir } from "@tauri-apps/api/fs";
-import zhCN from "@arco-design/web-vue/es/locale/lang/zh-cn";
 import { listen } from "@tauri-apps/api/event";
-import { ref } from "vue";
+import { FileEntry } from "@tauri-apps/api/fs";
+import zhCN from "@arco-design/web-vue/es/locale/lang/zh-cn";
+import { ref, watch } from "vue";
 import FileListWidget from "./components/fileListWidget.vue";
 import EditWidget from "./components/editWidget.vue";
-import { useLocalStorage } from "@vueuse/core";
-import { watch } from "vue";
+import CreatePopoverWidget from "./components/createPopoverWidget.vue";
+import { inject } from "vue";
+import { AppConfigProvide, appConfigKey } from "./hook/appConfig";
+import useInvokeHook from "./hook/invoke";
+import { nextTick } from "vue";
 
+const invokeHook = useInvokeHook();
 const dirInfoList = ref<FileEntry[]>([]);
-
-const basePath = useLocalStorage("dir", "");
+const { baseDirPath } = inject<AppConfigProvide>(appConfigKey)!;
+const isDirShow = ref(false);
 async function init() {
-  if (basePath.value.length > 0) {
+  if (baseDirPath.value.length > 0) {
+    dirInfoList.value = await invokeHook.readDir(baseDirPath.value);
+    invokeHook.watchDir(baseDirPath.value);
   }
 }
-
-listen("watch", (val) => {
-  console.log(val);
-});
-
 watch(
-  () => basePath.value,
+  () => baseDirPath.value,
   () => {
-    if (basePath.value.length > 0) {
+    if (baseDirPath.value.length > 0) {
+      isDirShow.value = true;
+    } else {
+      isDirShow.value = false;
     }
   },
   { immediate: true }
 );
+
+const updateDir = async () => {
+  dirInfoList.value = await invokeHook.readDir(baseDirPath.value);
+};
+const dirEvent = (event: any) => {
+  const data = JSON.parse(event.payload);
+  console.log("File event:", data);
+  switch (data.event_type) {
+    case "create":
+      updateDir();
+      break;
+    case "remove":
+      updateDir();
+      break;
+    default:
+      break;
+  }
+};
+
+listen("file_event", dirEvent);
+
 init();
 const openDir = async () => {
-  const dir = await invoke("on_dir");
+  const dir = await invokeHook.onDir();
   console.log(dir);
-  basePath.value = dir as string;
   if (!dir) return;
+  baseDirPath.value = dir as string;
+  await init();
 };
 
 const activeFile = ref<FileEntry>();
 const activeContent = ref("");
 const openFile = async (val: FileEntry) => {
-  const content: string = await invoke("read_text", { path: val.path });
-  activeFile.value = val;
-  activeContent.value = content;
+  const content = await invokeHook.readFile(val.path);
+  activeFile.value = undefined;
+  activeContent.value = "";
+  nextTick(() => {
+    activeFile.value = val;
+    activeContent.value = content;
+  });
 };
-
 const splitSize = ref(0.3);
+
+document.addEventListener("click", (event: any) => {
+  const target = event.target;
+  if (target && target.tagName === "A") {
+    event.preventDefault();
+    const href = target.getAttribute("href");
+    if (href) {
+      console.log("open_link", href);
+      invokeHook.openLink(href);
+    }
+  }
+});
 </script>
 
 <template>
-  <a-config-provider :locale="zhCN">
-    <div class="container" v-if="dirInfoList.length > 0">
+  <a-config-provider :locale="zhCN" size="small">
+    <div class="container" v-if="isDirShow">
+      <create-popover-widget />
       <a-split class="split" v-model:size="splitSize" min="80px">
         <template #first>
-          <FileListWidget :file-list="dirInfoList" @open-file="openFile" />
+          <file-list-widget :file-list="dirInfoList" @open-file="openFile" />
+        </template>
+        <template #resize-trigger>
+          <div class="resize-trigger"></div>
         </template>
         <template #second>
-          <EditWidget :info="activeFile" :content="activeContent" />
+          <edit-widget
+            v-if="activeFile"
+            :info="activeFile"
+            :content="activeContent"
+          />
         </template>
       </a-split>
     </div>
-    <a-result v-else>
-      <template #icon>
-        <IconFaceSmileFill />
-      </template>
-      <template #title>暂无内容</template>
-      <template #subtitle>请选择文件夹做完写作目录</template>
-      <template #extra>
-        <a-space>
-          <a-button type="text" @click="openDir">打开文件夹</a-button>
-        </a-space>
-      </template>
-    </a-result>
+    <div class="create" v-else>
+      <a-row>
+        <a-col :span="12">
+          <a-space direction="vertical" fill>
+            <div class="title">FreedomEdit</div>
+            <div class="title-label">使用Tauri实现的跨端MD编辑器</div>
+            <a-space direction="vertical" fill>
+              <div class="sub-title">启动</div>
+              <a-button type="text" @click="openDir">打开文件夹</a-button>
+            </a-space>
+          </a-space>
+        </a-col>
+        <a-col :span="12">
+          <div class="hits">
+            <div class="sub-title">提示</div>
+            <a-space direction="vertical" fill>
+              <p class="label">使用 Alt+P 可以快速创建文件</p>
+              <p class="label">使用 Ctrl+S 可以快速保存文件</p>
+            </a-space>
+          </div>
+        </a-col>
+      </a-row>
+    </div>
   </a-config-provider>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .container {
   width: 100vw;
   height: 100vh;
 }
 .split {
   height: 100vh;
+  .resize-trigger {
+    width: 1px;
+    height: 100vh;
+    position: relative;
+    background-color: var(--color-neutral-3);
+    &::before {
+      position: absolute;
+      content: "";
+      top: 0;
+      left: 1px;
+      width: 3px;
+      height: 100vh;
+    }
+  }
+}
+.create {
+  padding: 30px;
+  .title {
+    font-size: 36px;
+  }
+  .title-label {
+    font-size: 22px;
+    padding-bottom: 80px;
+  }
+  .sub-title {
+    font-size: 16px;
+  }
+  .hits {
+    padding-top: 60px;
+    .sub-title {
+      padding-bottom: 20px;
+    }
+    .label {
+      color: #636363;
+    }
+  }
 }
 </style>
