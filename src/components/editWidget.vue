@@ -1,22 +1,19 @@
 <template>
   <div class="edit">
-    <div class="head" v-if="props.info">
-      <div class="title"></div>
-      <div class="funs">
-        <a-button type="primary" size="small" @click="saveFile">保存</a-button>
-      </div>
-    </div>
     <Editor
       ref="editorRef"
+      mode="tab"
       :locale="zh"
       :plugins="plugins"
-      :value="editValue"
+      :value="editContent"
+      placeholder="请输入内容"
       @change="handleChange"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+// ----------
 import "bytemd/dist/index.css";
 import "github-markdown-css/github-markdown-light.css";
 import zh from "bytemd/locales/zh_Hans.json";
@@ -26,14 +23,17 @@ import gfm from "@bytemd/plugin-gfm";
 import gemoji from "@bytemd/plugin-gemoji";
 import highlight from "@bytemd/plugin-highlight";
 import "highlight.js/styles/default.css";
-import { FileEntry } from "@tauri-apps/api/fs";
 import breaks from "@bytemd/plugin-breaks";
-import { PropType, computed, watch } from "vue";
+//-----------
+import { FileEntry } from "@tauri-apps/api/fs";
+import { PropType, watch } from "vue";
 import { ref } from "vue";
 import useInvokeHook from "../hook/invoke";
 import { onMounted } from "vue";
 import { useMagicKeys } from "@vueuse/core";
 import { Notification } from "@arco-design/web-vue";
+import savePlugin from "../utils/editPlugin";
+const isEdit = ref(false);
 const invokeHook = useInvokeHook();
 const props = defineProps({
   info: Object as PropType<FileEntry>,
@@ -44,13 +44,21 @@ const props = defineProps({
     },
   },
 });
-const editValue = computed(() => props.content);
 const editContent = ref("");
+editContent.value = props.content;
 const handleChange = (val: string) => {
   editContent.value = val;
 };
-const plugins = [gfm(), gemoji(), highlight(), frontmatter(), breaks()];
-
+const plugins = [
+  gfm(),
+  gemoji(),
+  highlight(),
+  frontmatter(),
+  breaks(),
+  savePlugin(() => {
+    saveFile();
+  }),
+];
 const editorRef = ref();
 onMounted(() => {
   console.log(editorRef.value);
@@ -72,24 +80,30 @@ const saveFile = async () => {
     console.log(error);
   }
 };
+
+const onSave = () => {};
+const onClose = async () => {
+  if (props.content != editContent.value) {
+    return false;
+  }
+  return true;
+};
+defineExpose({ onSave, onClose });
 </script>
 
 <style scoped lang="scss">
 .edit {
-  --head: 35px;
   height: 100vh;
-}
-.head {
-  height: var(--head);
-  display: flex;
-  padding: 0 10px 0;
-  justify-content: space-between;
-  align-items: center;
 }
 .edit {
   :deep(.bytemd) {
-    height: calc(100vh - var(--head));
+    height: 100vh;
     border: none;
+    .bytemd-toolbar-right {
+      div:first-child {
+        display: none;
+      }
+    }
   }
 }
 </style>

@@ -6,7 +6,7 @@
     <template v-if="list && list.length > 0">
       <div class="content">
         <a-list-item
-          :class="activeKey === k ? 'active' : ''"
+          :class="activeFile.path === item.path ? 'active' : ''"
           v-for="(item, k) in list"
           @click="onItem(item, k)"
         >
@@ -25,10 +25,16 @@
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
 import { FileEntry } from "@tauri-apps/api/fs";
-import { inject, ref, watch } from "vue";
+import { inject, ref, watch, PropType } from "vue";
 import { AppConfigProvide, appConfigKey } from "../hook/appConfig";
 
 const props = defineProps({
+  activeFile: {
+    type: Object as PropType<FileEntry>,
+    default: function () {
+      return {};
+    },
+  },
   fileList: {
     type: Array<FileEntry>,
     default: function () {
@@ -63,10 +69,8 @@ const onSearch = useDebounceFn(() => {
     }
   });
 }, 600);
-const activeKey = ref(-1);
 const emits = defineEmits(["openFile"]);
 const onItem = (val: FileEntry, k: number) => {
-  activeKey.value = k;
   emits("openFile", val);
 };
 

@@ -191,7 +191,7 @@ fn main() {
             remove_watch_dir,
             read_dir,
             create_file,
-            open_link
+            open_link,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

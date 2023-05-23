@@ -19,6 +19,9 @@ async function init() {
   if (baseDirPath.value.length > 0) {
     dirInfoList.value = await invokeHook.readDir(baseDirPath.value);
     invokeHook.watchDir(baseDirPath.value);
+    console.log(
+      "不要吹灭你的灵感和你的想象力; 不要成为你的模型的奴隶。 ——文森特・梵高"
+    );
   }
 }
 watch(
@@ -64,7 +67,12 @@ const openDir = async () => {
 
 const activeFile = ref<FileEntry>();
 const activeContent = ref("");
+const editViewRef = ref();
 const openFile = async (val: FileEntry) => {
+  if (editViewRef.value) {
+    const isSave = await editViewRef.value.onClose();
+    if (!isSave) return;
+  }
   const content = await invokeHook.readFile(val.path);
   activeFile.value = undefined;
   activeContent.value = "";
@@ -94,7 +102,11 @@ document.addEventListener("click", (event: any) => {
       <create-popover-widget />
       <a-split class="split" v-model:size="splitSize" min="80px">
         <template #first>
-          <file-list-widget :file-list="dirInfoList" @open-file="openFile" />
+          <file-list-widget
+            :active-file="activeFile"
+            :file-list="dirInfoList"
+            @open-file="openFile"
+          />
         </template>
         <template #resize-trigger>
           <div class="resize-trigger"></div>
@@ -102,6 +114,7 @@ document.addEventListener("click", (event: any) => {
         <template #second>
           <edit-widget
             v-if="activeFile"
+            ref="editViewRef"
             :info="activeFile"
             :content="activeContent"
           />

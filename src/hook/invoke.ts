@@ -14,6 +14,9 @@ export default function useInvokeHook() {
     async onDir() {
       return await invoke("on_dir");
     },
+    async saveDialog() {
+      return await invoke("save_dialog");
+    },
     async readDir(path: string): Promise<FileEntry[]> {
       const res: string = await invoke("read_dir", { path });
       const fileList = JSON.parse(res);
