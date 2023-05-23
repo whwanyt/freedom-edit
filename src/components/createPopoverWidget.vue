@@ -51,9 +51,15 @@ onKeyStroke("Enter", async (e) => {
       );
       console.log(fileStatus);
     } else {
-      Notification.info({ title: "提示", content: "请输入有效文件名" });
+      Notification.info({
+        title: "提示",
+        content: "请输入有效文件名",
+        position: "bottomRight",
+        style: { padding: "5px 10px", width: "150px", alignItems: "center" },
+      });
     }
     isCreatePopover.value = false;
+    nameVal.value = "";
   }
 });
 </script>

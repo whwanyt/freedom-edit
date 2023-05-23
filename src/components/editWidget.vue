@@ -46,6 +46,18 @@ const props = defineProps({
 });
 const editContent = ref("");
 editContent.value = props.content;
+
+watch(
+  () => editContent.value,
+  () => {
+    if (props.content != editContent.value) {
+      isEdit.value = true;
+    } else {
+      isEdit.value = false;
+    }
+  }
+);
+
 const handleChange = (val: string) => {
   editContent.value = val;
 };
@@ -75,7 +87,11 @@ watch(CtrlS, (v) => {
 const saveFile = async () => {
   try {
     await invokeHook.saveFile(props.info!.path, editContent.value);
-    Notification.success({ content: "保存成功！", position: "bottomRight" });
+    Notification.success({
+      content: "保存成功！",
+      position: "bottomRight",
+      style: { padding: "5px 10px", width: "150px", alignItems: "center" },
+    });
   } catch (error) {
     console.log(error);
   }
@@ -83,7 +99,7 @@ const saveFile = async () => {
 
 const onSave = () => {};
 const onClose = async () => {
-  if (props.content != editContent.value) {
+  if (isEdit.value) {
     return false;
   }
   return true;
