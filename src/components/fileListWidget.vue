@@ -5,13 +5,21 @@
     </template>
     <template v-if="list && list.length > 0">
       <div class="content">
-        <a-list-item
-          :class="activeFile.path === item.path ? 'active' : ''"
-          v-for="(item, k) in list"
-          @click="onItem(item, k)"
+        <a-scrollbar
+          style="
+            height: calc(100vh - 38px - 35px);
+            overflow: hidden;
+            overflow-y: auto;
+          "
         >
-          {{ item.name }}</a-list-item
-        >
+          <a-list-item
+            :class="activeFile.path === item.path ? 'active' : ''"
+            v-for="(item, k) in list"
+            @click="onItem(item, k)"
+          >
+            {{ item.name }}</a-list-item
+          >
+        </a-scrollbar>
       </div>
     </template>
     <template #footer>

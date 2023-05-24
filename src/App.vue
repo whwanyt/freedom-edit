@@ -10,6 +10,7 @@ import { inject } from "vue";
 import { AppConfigProvide, appConfigKey } from "./hook/appConfig";
 import useInvokeHook from "./hook/invoke";
 import { nextTick } from "vue";
+import { onMounted } from "vue";
 
 const invokeHook = useInvokeHook();
 const dirInfoList = ref<FileEntry[]>([]);
@@ -19,6 +20,7 @@ async function init() {
   if (baseDirPath.value.length > 0) {
     dirInfoList.value = await invokeHook.readDir(baseDirPath.value);
     invokeHook.watchDir(baseDirPath.value);
+    invokeHook.proxyAssets(baseDirPath.value);
     console.log(
       "不要吹灭你的灵感和你的想象力; 不要成为你的模型的奴隶。 ——文森特・梵高"
     );
@@ -83,71 +85,83 @@ const openFile = async (val: FileEntry) => {
 };
 const splitSize = ref(0.3);
 
-document.addEventListener("click", (event: any) => {
-  const target = event.target;
-  if (target && target.tagName === "A") {
-    event.preventDefault();
-    const href = target.getAttribute("href");
-    if (href) {
-      console.log("open_link", href);
-      invokeHook.openLink(href);
+onMounted(() => {
+  document.addEventListener("click", (event: any) => {
+    const target = event.target;
+    if (target && target.tagName === "A") {
+      event.preventDefault();
+      const href = target.getAttribute("href");
+      if (href) {
+        console.log("open_link", href);
+        invokeHook.openLink(href);
+      }
     }
-  }
+  });
+  // document.body.setAttribute("arco-theme", "dark");
 });
 </script>
 
 <template>
-  <a-config-provider :locale="zhCN" size="small">
-    <div class="container" v-if="isDirShow">
-      <create-popover-widget />
-      <a-split class="split" v-model:size="splitSize" min="80px">
-        <template #first>
-          <file-list-widget
-            :active-file="activeFile"
-            :file-list="dirInfoList"
-            @open-file="openFile"
-          />
-        </template>
-        <template #resize-trigger>
-          <div class="resize-trigger"></div>
-        </template>
-        <template #second>
-          <edit-widget
-            v-if="activeFile"
-            ref="editViewRef"
-            :info="activeFile"
-            :content="activeContent"
-          />
-        </template>
-      </a-split>
-    </div>
-    <div class="create" v-else>
-      <a-row>
-        <a-col :span="12">
-          <a-space direction="vertical" fill>
-            <div class="title">FreedomEdit</div>
-            <div class="title-label">使用Tauri实现的跨端MD编辑器</div>
+  <a-config-provider :locale="zhCN">
+    <div class="main">
+      <div class="container" v-if="isDirShow">
+        <create-popover-widget @change="updateDir" />
+        <a-split class="split" v-model:size="splitSize" min="80px">
+          <template #first>
+            <file-list-widget
+              :active-file="activeFile"
+              :file-list="dirInfoList"
+              @open-file="openFile"
+            />
+          </template>
+          <template #resize-trigger>
+            <div class="resize-trigger"></div>
+          </template>
+          <template #second>
+            <edit-widget
+              v-if="activeFile"
+              ref="editViewRef"
+              :info="activeFile"
+              :content="activeContent"
+            />
+          </template>
+        </a-split>
+      </div>
+      <div class="create" v-else>
+        <a-row>
+          <a-col :span="12">
             <a-space direction="vertical" fill>
-              <div class="sub-title">启动</div>
-              <a-button type="text" @click="openDir">打开文件夹</a-button>
+              <div class="title">FreedomEdit</div>
+              <div class="title-label">使用Tauri实现的跨端MD编辑器</div>
+              <a-space direction="vertical" fill>
+                <div class="sub-title">启动</div>
+                <a-button type="text" @click="openDir">打开文件夹</a-button>
+              </a-space>
             </a-space>
-          </a-space>
-        </a-col>
-        <a-col :span="12">
-          <div class="hits">
-            <div class="sub-title">提示</div>
-            <a-space direction="vertical" fill>
-              <p class="label">使用 Alt+P 可以快速创建文件</p>
-              <p class="label">使用 Ctrl+S 可以快速保存文件</p>
-            </a-space>
-          </div>
-        </a-col>
-      </a-row>
+          </a-col>
+          <a-col :span="12">
+            <div class="hits">
+              <div class="sub-title">提示</div>
+              <a-space direction="vertical" fill>
+                <p class="label">使用 Alt+P 可以快速创建文件</p>
+                <p class="label">使用 Ctrl+S 可以快速保存文件</p>
+              </a-space>
+            </div>
+          </a-col>
+        </a-row>
+      </div>
     </div>
   </a-config-provider>
 </template>
 
 <style scoped lang="scss">
+.main {
+  width: 100vw;
+  height: 100vh;
+  color: var(--color-text-2);
+  font-size: 14px;
+  background-color: var(--color-bg-1);
+}
 .container {
   width: 100vw;
   height: 100vh;

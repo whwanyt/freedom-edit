@@ -1,5 +1,5 @@
 <template>
-  <div class="edit">
+  <div class="edit-view" id="editView">
     <Editor
       ref="editorRef"
       mode="tab"
@@ -31,8 +31,11 @@ import { ref } from "vue";
 import useInvokeHook from "../hook/invoke";
 import { onMounted } from "vue";
 import { useMagicKeys } from "@vueuse/core";
-import { Notification } from "@arco-design/web-vue";
+
+import { Notification, Modal, Space, Button } from "@arco-design/web-vue";
+
 import savePlugin from "../utils/editPlugin";
+import { h } from "vue";
 const isEdit = ref(false);
 const invokeHook = useInvokeHook();
 const props = defineProps({
@@ -92,26 +95,81 @@ const saveFile = async () => {
       position: "bottomRight",
       style: { padding: "5px 10px", width: "150px", alignItems: "center" },
     });
+    isEdit.value = false;
   } catch (error) {
     console.log(error);
   }
 };
 
-const onSave = () => {};
+const onSaveModal = () => {
+  return new Promise((resolve) => {
+    const saveMoadal = Modal.warning({
+      titleAlign: "start",
+      width: "320px",
+      modalClass: "save-modal",
+      title: "提示",
+      content: `是否保存对 ${props.info?.name} 的修改？`,
+      footer: () =>
+        h(Space, () => [
+          h(
+            Button,
+            {
+              type: "outline",
+              onClick: () => {
+                saveMoadal.close();
+                resolve(true);
+              },
+            },
+            () => "保存"
+          ),
+          h(
+            Button,
+            {
+              onClick: () => {
+                saveMoadal.close();
+                resolve(false);
+              },
+            },
+            () => "不保存"
+          ),
+          h(
+            Button,
+            {
+              onClick: () => {
+                saveMoadal.close();
+                resolve(null);
+              },
+            },
+            () => "取消"
+          ),
+        ]),
+      onClose: () => {
+        resolve(null);
+      },
+    });
+  });
+};
+
 const onClose = async () => {
   if (isEdit.value) {
-    return false;
+    const isSave = await onSaveModal();
+    if (isSave === null) {
+      return false;
+    } else if (isSave) {
+      saveFile();
+      return true;
+    }
+    return true;
   }
   return true;
 };
-defineExpose({ onSave, onClose });
+defineExpose({ onClose });
 </script>
 
 <style scoped lang="scss">
-.edit {
+.edit-view {
   height: 100vh;
-}
-.edit {
+
   :deep(.bytemd) {
     height: 100vh;
     border: none;
@@ -120,6 +178,20 @@ defineExpose({ onSave, onClose });
         display: none;
       }
     }
+  }
+}
+</style>
+
+<style lang="scss">
+.save-modal {
+  padding: 10px !important;
+  .arco-modal-header {
+    margin-bottom: 10px !important;
+  }
+  .arco-modal-footer {
+    margin-top: 10px !important;
+    display: flex;
+    justify-content: end;
   }
 }
 </style>

@@ -7,6 +7,7 @@ use std::io::prelude::*;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::{fs, thread};
+use tauri::{window, Manager};
 
 struct AppState {
     stop_flag: bool,
@@ -175,6 +176,11 @@ fn open_link(href: &str) -> bool {
     return false;
 }
 
+#[tauri::command]
+fn register_network_request_interceptor(window: tauri::Window) {
+    println!("register_network_request_interceptor");
+}
+
 fn main() {
     let app_state = Arc::new(Mutex::new(AppState {
         stop_flag: false,
@@ -192,6 +198,7 @@ fn main() {
             read_dir,
             create_file,
             open_link,
+            register_network_request_interceptor,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

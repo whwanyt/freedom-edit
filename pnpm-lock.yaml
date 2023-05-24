@@ -25,6 +25,9 @@ dependencies:
   '@vueuse/core':
     specifier: ^10.1.2
     version: 10.1.2(vue@3.2.45)
+  ajax-hook:
+    specifier: ^2.1.3
+    version: 2.1.3
   bytemd:
     specifier: ^1.21.0
     version: 1.21.0
@@ -753,6 +756,10 @@ packages:
     transitivePeerDependencies:
       - '@vue/composition-api'
       - vue
+    dev: false
+
+  /ajax-hook@2.1.3:
+    resolution: {integrity: sha512-laElRlQjwhZihWONbGrPq/tYNCJlpPbu5YtjNghUrfRJgmxg6NiLbAoSbdmkN9a5+kMfgeHnCYE/GiSDJO7KjA==}
     dev: false
 
   /anymatch@3.1.3:

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "tauri:dev": "pnpm tauri dev",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri"
@@ -18,6 +19,7 @@
     "@bytemd/vue-next": "^1.21.0",
     "@tauri-apps/api": "^1.3.0",
     "@vueuse/core": "^10.1.2",
+    "ajax-hook": "^2.1.3",
     "bytemd": "^1.21.0",
     "github-markdown-css": "^5.2.0",
     "highlight.js": "^11.8.0",

@@ -41,6 +41,7 @@ watch(AltP, (v) => {
   }
 });
 
+const emits = defineEmits(["change"]);
 const invokeHook = useInvokeHook();
 onKeyStroke("Enter", async (e) => {
   e.preventDefault();
@@ -49,7 +50,9 @@ onKeyStroke("Enter", async (e) => {
       const fileStatus = await invokeHook.createFile(
         baseDirPath.value + "/" + nameVal.value + ".md"
       );
-      console.log(fileStatus);
+      if (fileStatus) {
+        emits("change");
+      }
     } else {
       Notification.info({
         title: "提示",

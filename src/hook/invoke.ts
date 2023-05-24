@@ -17,6 +17,9 @@ export default function useInvokeHook() {
     async saveDialog() {
       return await invoke("save_dialog");
     },
+    async proxyAssets(dir: string) {
+      invoke("register_network_request_interceptor");
+    },
     async readDir(path: string): Promise<FileEntry[]> {
       const res: string = await invoke("read_dir", { path });
       const fileList = JSON.parse(res);
