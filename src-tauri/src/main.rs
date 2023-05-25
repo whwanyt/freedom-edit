@@ -172,11 +172,23 @@ fn save_text(path: &str, content: &str) -> bool {
 
 //保存图片
 #[tauri::command]
-fn save_image(path: &str, image_data: &str) {
+fn save_image(path: &str, file_name: &str, image_data: &str) {
+    if let Ok(_) = fs::metadata(path) {
+        println!("目录存在无需创建")
+    } else {
+        if let Err(err) = fs::create_dir(path) {
+            println!("目录创建失败: {}", err);
+        } else {
+            println!("目录创建成功");
+        }
+    }
     // 将 Base64 编码的图片数据解码
     let decoded_image_data = general_purpose::STANDARD.decode(&image_data).unwrap();
     // 保存图片
-    if let Err(err) = save_image_data(&decoded_image_data, path) {
+    let mut file_path = PathBuf::new();
+    file_path.push(path);
+    file_path.push(file_name);
+    if let Err(err) = save_image_data(&decoded_image_data, &file_path.to_string_lossy()) {
         eprintln!("图片保存失败：{}", err);
     }
 }

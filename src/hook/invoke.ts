@@ -71,11 +71,15 @@ export default function useInvokeHook() {
       return new Promise((resolve) => {
         const fileReader = new FileReader();
         fileReader.onload = async function (e) {
-          const path = await join(baseDirPath.value, "./assets/", file.name);
+          const path = await join(baseDirPath.value, "./assets/");
           const base64 = fileReader
             .result!.toString()
             .replace("data:image/png;base64,", "");
-          await invoke("save_image", { path, imageData: base64 });
+          await invoke("save_image", {
+            path,
+            fileName: file.name,
+            imageData: base64,
+          });
           resolve("./assets/" + file.name);
         };
         fileReader.readAsDataURL(file);

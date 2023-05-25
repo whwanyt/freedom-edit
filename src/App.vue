@@ -32,6 +32,8 @@ watch(
       isDirShow.value = true;
     } else {
       isDirShow.value = false;
+      activeFile.value = undefined;
+      activeContent.value = "";
     }
   },
   { immediate: true }
@@ -171,7 +173,7 @@ onMounted(() => {
     width: 1px;
     height: 100vh;
     position: relative;
-    background-color: var(	--color-border-1);
+    background-color: var(--color-border-1);
     &::before {
       position: absolute;
       content: "";
