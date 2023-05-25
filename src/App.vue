@@ -15,7 +15,6 @@ import { onMounted } from "vue";
 const invokeHook = useInvokeHook();
 const dirInfoList = ref<FileEntry[]>([]);
 const { baseDirPath } = inject<AppConfigProvide>(appConfigKey)!;
-const isDirShow = ref(false);
 async function init() {
   if (baseDirPath.value.length > 0) {
     dirInfoList.value = await invokeHook.readDir(baseDirPath.value);
@@ -25,19 +24,6 @@ async function init() {
     );
   }
 }
-watch(
-  () => baseDirPath.value,
-  () => {
-    if (baseDirPath.value.length > 0) {
-      isDirShow.value = true;
-    } else {
-      isDirShow.value = false;
-      activeFile.value = undefined;
-      activeContent.value = "";
-    }
-  },
-  { immediate: true }
-);
 
 const updateDir = async () => {
   dirInfoList.value = await invokeHook.readDir(baseDirPath.value);
@@ -70,6 +56,21 @@ const openDir = async () => {
 
 const activeFile = ref<FileEntry>();
 const activeContent = ref("");
+const isDirShow = ref(false);
+
+watch(
+  () => baseDirPath.value,
+  () => {
+    if (baseDirPath.value.length > 0) {
+      isDirShow.value = true;
+    } else {
+      isDirShow.value = false;
+      activeFile.value = undefined;
+      activeContent.value = "";
+    }
+  },
+  { immediate: true }
+);
 const editViewRef = ref();
 const openFile = async (val: FileEntry) => {
   if (editViewRef.value) {
