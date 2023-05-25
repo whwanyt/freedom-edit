@@ -171,7 +171,7 @@ onMounted(() => {
     width: 1px;
     height: 100vh;
     position: relative;
-    background-color: var(--color-neutral-3);
+    background-color: var(	--color-border-1);
     &::before {
       position: absolute;
       content: "";

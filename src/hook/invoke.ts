@@ -31,7 +31,6 @@ export default function useInvokeHook() {
             // @ts-ignore
             iterator.target.childNodes[0].className === "markdown-body"
           ) {
-            console.log("需要获取");
             const images = document.querySelectorAll("img");
             images.forEach(async (item) => {
               if (item.src.includes("/assets/")) {

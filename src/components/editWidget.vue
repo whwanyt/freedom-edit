@@ -16,6 +16,8 @@
 <script setup lang="ts">
 // ----------
 import "bytemd/dist/index.css";
+import "../theme/edit-light.scss";
+import "../theme/edit-dark.scss";
 import "github-markdown-css/github-markdown-light.css";
 import zh from "bytemd/locales/zh_Hans.json";
 import { Editor } from "@bytemd/vue-next";
