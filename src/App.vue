@@ -85,7 +85,7 @@ const openFile = async (val: FileEntry) => {
     activeContent.value = content;
   });
 };
-const splitSize = ref(0.3);
+const splitSize = ref(0.28);
 
 onMounted(() => {
   document.addEventListener("click", (event: any) => {
