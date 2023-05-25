@@ -1,14 +1,15 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use base64::engine::general_purpose;
+use base64::Engine;
 use hotwatch::{Event, Hotwatch};
 use serde::Serialize;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::{fs, thread};
-use tauri::{window, Manager};
-
+use tauri::Manager;
 struct AppState {
     stop_flag: bool,
     thread_handle: Option<thread::JoinHandle<()>>,
@@ -58,10 +59,12 @@ fn watch_dir(path: &str, window: tauri::Window, state: tauri::State<Arc<Mutex<Ap
     if app_state.thread_handle.is_some() {
         app_state.stop_flag = true;
     }
+    // app.fs_scope().allow_file(dir).unwrap().extend("授权失败");
     let dir = path.to_string();
     let hotwatch = Arc::new(Mutex::new(
         Hotwatch::new().expect("hotwatch failed to initialize!"),
     ));
+    window.fs_scope().allow_file(dir.to_string()).unwrap();
     let stop_flag = Arc::new(Mutex::new(app_state.stop_flag));
     let hotwatch_thread = thread::spawn(move || {
         hotwatch
@@ -167,6 +170,23 @@ fn save_text(path: &str, content: &str) -> bool {
     return true;
 }
 
+//保存图片
+#[tauri::command]
+fn save_image(path: &str, image_data: &str) {
+    // 将 Base64 编码的图片数据解码
+    let decoded_image_data = general_purpose::STANDARD.decode(&image_data).unwrap();
+    // 保存图片
+    if let Err(err) = save_image_data(&decoded_image_data, path) {
+        eprintln!("图片保存失败：{}", err);
+    }
+}
+
+fn save_image_data(image_data: &[u8], filename: &str) -> Result<(), std::io::Error> {
+    let mut file = std::fs::File::create(filename)?;
+    file.write_all(image_data)?;
+    Ok(())
+}
+
 //使用浏览器打开链接
 #[tauri::command]
 fn open_link(href: &str) -> bool {
@@ -174,11 +194,6 @@ fn open_link(href: &str) -> bool {
         return true;
     }
     return false;
-}
-
-#[tauri::command]
-fn register_network_request_interceptor(window: tauri::Window) {
-    println!("register_network_request_interceptor");
 }
 
 fn main() {
@@ -192,13 +207,13 @@ fn main() {
             greet,
             read_text,
             save_text,
+            save_image,
             on_dir,
             watch_dir,
             remove_watch_dir,
             read_dir,
             create_file,
             open_link,
-            register_network_request_interceptor,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

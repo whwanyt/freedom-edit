@@ -20,7 +20,6 @@ async function init() {
   if (baseDirPath.value.length > 0) {
     dirInfoList.value = await invokeHook.readDir(baseDirPath.value);
     invokeHook.watchDir(baseDirPath.value);
-    invokeHook.proxyAssets(baseDirPath.value);
     console.log(
       "不要吹灭你的灵感和你的想象力; 不要成为你的模型的奴隶。 ——文森特・梵高"
     );

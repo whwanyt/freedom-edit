@@ -12,9 +12,17 @@
   },
   "tauri": {
     "allowlist": {
+      "path": {
+        "all": true
+      },
       "all": false,
       "dialog": {
         "all": true
+      },
+      "protocol": {
+        "all": false,
+        "asset": true,
+        "assetScope": ["**"]
       },
       "fs": {
         "all": true

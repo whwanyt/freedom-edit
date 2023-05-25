@@ -4,6 +4,7 @@
       ref="editorRef"
       mode="tab"
       :locale="zh"
+      :uploadImages="uploadImages"
       :plugins="plugins"
       :value="editContent"
       placeholder="请输入内容"
@@ -74,9 +75,18 @@ const plugins = [
     saveFile();
   }),
 ];
+const uploadImages = async (vals: File[]) => {
+  let list = [];
+  for (const file of vals) {
+    const url = await invokeHook.saveImage(file);
+    list.push({ name: file.name, url });
+  }
+  console.log(list);
+  return list;
+};
 const editorRef = ref();
 onMounted(() => {
-  console.log(editorRef.value);
+  invokeHook.proxyAssets(editorRef.value.el);
 });
 
 const keys = useMagicKeys();
