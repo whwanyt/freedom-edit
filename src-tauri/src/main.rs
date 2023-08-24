@@ -183,13 +183,24 @@ fn save_image(path: &str, file_name: &str, image_data: &str) {
         }
     }
     // 将 Base64 编码的图片数据解码
-    let decoded_image_data = general_purpose::STANDARD.decode(&image_data).unwrap();
-    // 保存图片
-    let mut file_path = PathBuf::new();
-    file_path.push(path);
-    file_path.push(file_name);
-    if let Err(err) = save_image_data(&decoded_image_data, &file_path.to_string_lossy()) {
-        eprintln!("图片保存失败：{}", err);
+
+    let image_data = general_purpose::STANDARD.decode(&image_data);
+
+
+
+    match image_data {
+        Ok(decoded_image_data) => {
+            let mut file_path = PathBuf::new();
+            file_path.push(path);
+            file_path.push(file_name);
+            if let Err(err) = save_image_data(&decoded_image_data, &file_path.to_string_lossy()) {
+                eprintln!("{}", err);
+            }
+        }
+        Err(err) => {
+            print!("异常");
+            println!("{}", err)
+        }
     }
 }
 

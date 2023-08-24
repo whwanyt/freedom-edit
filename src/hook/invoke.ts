@@ -35,7 +35,7 @@ export default function useInvokeHook() {
             images.forEach(async (item) => {
               if (item.src.includes("/assets/")) {
                 const url = new URL(item.src).pathname;
-                const filePath = await join(baseDirPath.value, url);
+                const filePath = await join(baseDirPath.value,decodeURIComponent(url));
                 const assetUrl = convertFileSrc(filePath);
                 console.log(assetUrl);
                 item.src = assetUrl;
@@ -74,7 +74,7 @@ export default function useInvokeHook() {
           const path = await join(baseDirPath.value, "./assets/");
           const base64 = fileReader
             .result!.toString()
-            .replace("data:image/png;base64,", "");
+            .split(";base64,")[1];
           await invoke("save_image", {
             path,
             fileName: file.name,
